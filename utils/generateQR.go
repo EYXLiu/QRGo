@@ -46,24 +46,58 @@ func GenerateQRCode(data string) [][]bool {
 		i++
 	}
 
-	switch t {
-	case "num":
-
-	case "alphanum":
-
-	default:
-		for j := range len(data) {
-			value := data[j]
-			for w := range 8 {
-				_ = w
-				result[i+7-w] = (value & 1) != 0
-				value >>= 1
-			}
-			i += 8
+	writeBits := func(value int, length int) {
+		for b := length - 1; b >= 0; b-- {
+			result[i] = (value>>b)&1 != 0
+			i++
 		}
 	}
 
-	for i % 8 != 0 {
+	switch t {
+	case "num":
+		for pos := 0; pos < len(data); {
+			if pos+3 <= len(data) {
+				v := int(data[pos]-'0')*100 + int(data[pos+1]-'0')*10 + int(data[pos+2]-'0')
+				writeBits(v, 10)
+				pos += 3
+			} else if pos+2 <= len(data) {
+				v := int(data[pos]-'0')*10 + int(data[pos+1]-'0')
+				writeBits(v, 7)
+				pos += 2
+			} else {
+				v := int(data[pos] - '0')
+				writeBits(v, 4)
+				pos += 1
+			}
+		}
+	case "alphanum":
+		alphaMap := map[byte]int{
+			'0': 0, '1': 1, '2': 2, '3': 3, '4': 4,
+			'5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+			'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15, 'G': 16, 'H': 17, 'I': 18, 'J': 19,
+			'K': 20, 'L': 21, 'M': 22, 'N': 23, 'O': 24, 'P': 25, 'Q': 26, 'R': 27, 'S': 28, 'T': 29,
+			'U': 30, 'V': 31, 'W': 32, 'X': 33, 'Y': 34, 'Z': 35,
+			' ': 36, '$': 37, '%': 38, '*': 39, '+': 40, '-': 41, '.': 42, '/': 43, ':': 44,
+		}
+		for pos := 0; pos < len(data); {
+			if pos+2 <= len(data) {
+				v := alphaMap[data[pos]]*45 + alphaMap[data[pos+1]]
+				writeBits(v, 11)
+				pos += 2
+			} else {
+				v := alphaMap[data[pos]]
+				writeBits(v, 6)
+				pos += 1
+			}
+		}
+	default:
+		for j := range len(data) {
+			value := data[j]
+			writeBits(int(value), 8)
+		}
+	}
+
+	for i%8 != 0 {
 		result[i] = false
 		i++
 	}
