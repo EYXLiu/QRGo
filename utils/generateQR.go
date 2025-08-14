@@ -19,7 +19,7 @@ func GenerateQRCode(data string) [][]bool {
 	length := 440
 	result := make([]bool, length)
 
-	//Get Mode
+	//Mode
 	switch t {
 	case "num":
 		result[0] = false

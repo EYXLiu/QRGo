@@ -3,23 +3,23 @@ package handlers
 import (
 	"image/png"
 	"net/http"
-
+	"github.com/gin-gonic/gin"
 	"QRGo/utils"
 )
 
-func QRHandler(w http.ResponseWriter, r *http.Request) {
-	data := r.URL.Query().Get("data")
+func QRHandler(c *gin.Context) {
+	data := c.Query("data")
 	if data == "" {
-		http.Error(w, "Missing data", http.StatusBadRequest)
+		c.String(http.StatusBadRequest, "Missing data")
 		return
 	}
 	if len(data) > 53 || !utils.IsAllowed(data) {
-		http.Error(w, "Bad data input", http.StatusBadRequest)
+		c.String(http.StatusBadRequest, "Bad data input")
 		return
 	}
-	
+
 	m := utils.GenerateQRCode(data)
 	img := utils.GenerateImage(m)
-	w.Header().Set("Content-Type", "image/png")
-	png.Encode(w, img)
+	c.Header("Content-Type", "image/png")
+	png.Encode(c.Writer, img)
 }

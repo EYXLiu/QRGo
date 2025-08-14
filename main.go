@@ -1,13 +1,13 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
+	"github.com/gin-gonic/gin"
 	"QRGo/handlers"
 )
 
 func main() {
-	http.HandleFunc("/qrgo", handlers.QRHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := gin.Default()
+	r.GET("/ping", handlers.PingHandler)
+	r.GET("/qr", handlers.QRHandler)
+    r.Run(":8080")
 }
